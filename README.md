@@ -14,11 +14,13 @@ All AI runs on your computer: no internet, no account, no API key.
 
 ## Install
 
-1. Download this repo (**Code → Download ZIP**, or `git clone`) and unzip it.
+1. Download **`action-volume-tamer-2.0.0.zip`** from the [latest release](https://github.com/khadgachy07/action-volume-tamer/releases/latest) and unzip it.
 2. Open `chrome://extensions` (or `edge://extensions`).
 3. Turn on **Developer mode** (top right).
-4. Click **Load unpacked** and select the **`extension`** folder.
+4. Click **Load unpacked** and select the unzipped **`action-volume-tamer-2.0.0`** folder.
 5. Pin the extension to your toolbar.
+
+Working from the source code instead? Clone the repo and load its **`extension`** folder.
 
 ## Use
 
