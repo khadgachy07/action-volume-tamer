@@ -1,8 +1,8 @@
 {
-  "name": "action-volume-tamer",
-  "version": "2.1.0",
+  "name": "boomguard",
+  "version": "2.2.0",
   "private": true,
-  "description": "Browser extension for Chrome and Firefox that keeps movie dialogue audible and tames loud action scenes with on-device AI.",
+  "description": "BoomGuard: a Chrome and Firefox extension that keeps movie dialogue clear and tames loud action scenes with on-device AI.",
   "license": "MIT",
   "scripts": {
     "test:audio": "node test/tts.js && python3 test/make_soundtrack.py",

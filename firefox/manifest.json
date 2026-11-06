@@ -1,11 +1,12 @@
 {
   "manifest_version": 2,
-  "name": "Action Volume Tamer",
-  "version": "2.1.0",
-  "description": "On-device AI keeps movie dialogue audible, turns down loud action scenes, and learns how you like it.",
+  "name": "BoomGuard – AI Movie Volume Leveler",
+  "short_name": "BoomGuard",
+  "version": "2.2.0",
+  "description": "Keeps movie dialogue clear and turns down loud action scenes automatically, with on-device AI that learns your taste.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "action-volume-tamer@khadgachy07.github.io",
+      "id": "boomguard@khadgachy07.github.io",
       "strict_min_version": "140.0",
       "data_collection_permissions": {
         "required": [
@@ -40,7 +41,7 @@
   ],
   "browser_action": {
     "default_popup": "popup.html",
-    "default_title": "Action Volume Tamer"
+    "default_title": "BoomGuard"
   },
   "commands": {
     "too-loud": {

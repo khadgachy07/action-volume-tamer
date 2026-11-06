@@ -1,4 +1,6 @@
-# 🎬 Action Volume Tamer
+# 🛡️ BoomGuard
+
+**AI movie volume leveler for Firefox and Chrome.**
 
 A **Firefox** and **Chrome / Edge / Brave** extension for the classic movie problem: **the dialogue is quiet, then the action scene blows your ears off.**
 
@@ -14,16 +16,16 @@ All AI runs on your computer: no internet, no account, no API key.
 
 ## Install
 
-Downloads are on the [latest release](https://github.com/khadgachy07/action-volume-tamer/releases/latest) page.
+Downloads are on the [latest release](https://github.com/khadgachy07/boomguard/releases/latest) page.
 
 ### Firefox (140 or newer)
 
-- **Permanent:** if the release lists **`action-volume-tamer-firefox-<version>.xpi`**, open it in Firefox and click **Add**. It's signed by Mozilla.
-- **Try it out:** download **`action-volume-tamer-firefox-<version>.zip`**, open `about:debugging` → **This Firefox** → **Load Temporary Add-on…**, and pick the zip. It stays until Firefox restarts.
+- **Permanent:** if the release lists **`boomguard-firefox-<version>.xpi`**, open it in Firefox and click **Add**. It's signed by Mozilla.
+- **Try it out:** download **`boomguard-firefox-<version>.zip`**, open `about:debugging` → **This Firefox** → **Load Temporary Add-on…**, and pick the zip. It stays until Firefox restarts.
 
 ### Chrome, Edge, Brave
 
-1. Download **`action-volume-tamer-chrome-<version>.zip`** and unzip it.
+1. Download **`boomguard-chrome-<version>.zip`** and unzip it.
 2. Open `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode** (top right).
 3. Click **Load unpacked** and select the unzipped folder.
 4. Pin the extension to your toolbar.

@@ -14,7 +14,7 @@ from selenium.webdriver.firefox.service import Service
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 OUT = os.path.join(HERE, 'out')
-ADDON_ID = 'action-volume-tamer@khadgachy07.github.io'
+ADDON_ID = 'boomguard@khadgachy07.github.io'
 UUID = '7e57a5d2-0000-4000-8000-000000000001'
 
 subprocess.run(['node', os.path.join(ROOT, 'tools', 'build-firefox.js')], check=True)

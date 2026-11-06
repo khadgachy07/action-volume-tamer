@@ -93,11 +93,11 @@ jobs:
         if: env.SKIP != '1'
         run: |
           # Chrome / Edge / Brave: a folder to "Load unpacked"
-          C=action-volume-tamer-chrome-$VERSION
+          C=boomguard-chrome-$VERSION
           mkdir -p dist/$C && cp -r extension/. dist/$C/ && cp LICENSE THIRD_PARTY_NOTICES.md dist/$C/
           (cd dist && zip -qr $C.zip $C)
           # Firefox: manifest at the top level, so the zip itself can be loaded
-          F=action-volume-tamer-firefox-$VERSION
+          F=boomguard-firefox-$VERSION
           (cd dist/firefox && zip -qr ../$F.zip .)
           echo "FILES=dist/$C.zip dist/$F.zip" >> "$GITHUB_ENV"
 
@@ -106,7 +106,7 @@ jobs:
         run: |
           npx --yes web-ext@latest sign -s dist/firefox --channel unlisted \
             --api-key "$AMO_API_KEY" --api-secret "$AMO_API_SECRET" --artifacts-dir dist/signed
-          XPI=dist/action-volume-tamer-firefox-$VERSION.xpi
+          XPI=dist/boomguard-firefox-$VERSION.xpi
           mv "$(ls dist/signed/*.xpi | head -1)" "$XPI"
           echo "FILES=$FILES $XPI" >> "$GITHUB_ENV"
 
@@ -114,8 +114,8 @@ jobs:
         if: env.SKIP != '1'
         run: |
           NOTES=.github/releases/$TAG.md
-          if [ -f "$NOTES" ]; then cp "$NOTES" notes.md; else echo "Action Volume Tamer $VERSION" > notes.md; fi
+          if [ -f "$NOTES" ]; then cp "$NOTES" notes.md; else echo "BoomGuard $VERSION" > notes.md; fi
           printf '\n### SHA-256\n' >> notes.md
           for f in $FILES; do printf -- '- `%s`: `%s`\n' "$(basename $f)" "$(sha256sum $f | cut -d' ' -f1)" >> notes.md; done
           gh release create "$TAG" $FILES --target "$GITHUB_SHA" \
-            --title "Action Volume Tamer $VERSION" --notes-file notes.md --latest
+            --title "BoomGuard $VERSION" --notes-file notes.md --latest
