@@ -94,10 +94,19 @@
     async init(vadModel, yamModel) {
       const ort = this.ort;
       const opts = { executionProviders: ['wasm'], graphOptimizationLevel: 'all' };
-      this.vad = await ort.InferenceSession.create(vadModel, opts);
-      this.yam = await ort.InferenceSession.create(yamModel, opts);
-      this.sr = new ort.Tensor('int64', BigInt64Array.from([16000n]), []);
+      this.useSessions(
+        await ort.InferenceSession.create(vadModel, opts),
+        await ort.InferenceSession.create(yamModel, opts)
+      );
+    }
+
+    // Share already-loaded models between several listeners (e.g. one per browser tab)
+    useSessions(vad, yam) {
+      this.vad = vad;
+      this.yam = yam;
+      this.sr = new this.ort.Tensor('int64', BigInt64Array.from([16000n]), []);
       this.resetVad();
+      return this;
     }
 
     resetVad() {

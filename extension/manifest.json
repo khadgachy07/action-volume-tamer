@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Action Volume Tamer",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "On-device AI keeps movie dialogue audible, turns down loud action scenes, and learns how you like it.",
   "permissions": ["tabCapture", "offscreen", "storage", "scripting"],
   "host_permissions": ["<all_urls>"],

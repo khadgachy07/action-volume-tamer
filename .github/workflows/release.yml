@@ -1,16 +1,20 @@
 # Publishes a GitHub release for the version in extension/manifest.json:
-# runs the tests, zips the extension, and attaches the zip.
+# tests the Chrome and Firefox versions, builds both, and attaches them to the release.
 #
 # Runs automatically when the extension changes on main. It skips versions that already
-# have a release, so bumping "version" in manifest.json is all it takes to ship a new one.
+# have a release, so bumping "version" in both manifest.json files is all it takes to ship.
 # It can also be started by hand (Actions → Release → Run workflow), or by pushing a v* tag.
 # Release notes come from .github/releases/v<version>.md when that file exists.
+#
+# Firefox signing (optional): add repository secrets AMO_API_KEY and AMO_API_SECRET
+# (from https://addons.mozilla.org/developers/addon/api/key/) and the release also gets a
+# Mozilla-signed .xpi that installs permanently in regular Firefox.
 name: Release
 
 on:
   push:
     branches: [main]
-    paths: ['extension/**', '.github/releases/**', '.github/workflows/release.yml']
+    paths: ['extension/**', 'firefox/**', '.github/releases/**', '.github/workflows/release.yml']
     tags: ['v*']
   workflow_dispatch:
 
@@ -26,12 +30,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
+      AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+      AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Work out the version
         run: |
           VERSION=$(node -p "require('./extension/manifest.json').version")
+          FF_VERSION=$(node -p "require('./firefox/manifest.json').version")
+          [ "$VERSION" = "$FF_VERSION" ] || { echo "Chrome $VERSION and Firefox $FF_VERSION versions differ"; exit 1; }
           TAG=v$VERSION
           if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "$TAG" ]; then
             echo "Tag $GITHUB_REF_NAME does not match manifest version $VERSION"; exit 1
@@ -57,33 +65,57 @@ jobs:
         if: env.SKIP != '1'
         run: |
           npm install
-          pip install numpy playwright
+          pip install numpy playwright selenium
           python -m playwright install --with-deps chromium
 
       - name: Offline test (real models in Node)
         if: env.SKIP != '1'
         run: npm run test:audio && npm run test:sim
 
-      - name: Live test (real extension in Chrome)
+      - name: Live test (Chrome version in Chromium)
         if: env.SKIP != '1'
         run: npm run test:chrome
 
-      - name: Build zip
+      - name: Build and lint the Firefox version
         if: env.SKIP != '1'
         run: |
-          NAME=action-volume-tamer-$VERSION
-          mkdir -p dist/$NAME
-          cp -r extension/. dist/$NAME/
-          cp LICENSE THIRD_PARTY_NOTICES.md dist/$NAME/
-          (cd dist && zip -qr $NAME.zip $NAME)
-          echo "ZIP=dist/$NAME.zip" >> "$GITHUB_ENV"
-          echo "SHA=$(sha256sum dist/$NAME.zip | cut -d' ' -f1)" >> "$GITHUB_ENV"
+          npm run build:firefox
+          npx --yes web-ext@latest lint -s dist/firefox
+
+      - name: Firefox test
+        if: env.SKIP != '1'
+        run: |
+          export FIREFOX=$(command -v firefox)
+          export GECKODRIVER=$(command -v geckodriver || echo "$GECKOWEBDRIVER/geckodriver")
+          npm run test:firefox
+
+      - name: Build downloads
+        if: env.SKIP != '1'
+        run: |
+          # Chrome / Edge / Brave: a folder to "Load unpacked"
+          C=action-volume-tamer-chrome-$VERSION
+          mkdir -p dist/$C && cp -r extension/. dist/$C/ && cp LICENSE THIRD_PARTY_NOTICES.md dist/$C/
+          (cd dist && zip -qr $C.zip $C)
+          # Firefox: manifest at the top level, so the zip itself can be loaded
+          F=action-volume-tamer-firefox-$VERSION
+          (cd dist/firefox && zip -qr ../$F.zip .)
+          echo "FILES=dist/$C.zip dist/$F.zip" >> "$GITHUB_ENV"
+
+      - name: Sign the Firefox version with Mozilla
+        if: env.SKIP != '1' && env.AMO_API_KEY != ''
+        run: |
+          npx --yes web-ext@latest sign -s dist/firefox --channel unlisted \
+            --api-key "$AMO_API_KEY" --api-secret "$AMO_API_SECRET" --artifacts-dir dist/signed
+          XPI=dist/action-volume-tamer-firefox-$VERSION.xpi
+          mv "$(ls dist/signed/*.xpi | head -1)" "$XPI"
+          echo "FILES=$FILES $XPI" >> "$GITHUB_ENV"
 
       - name: Publish release
         if: env.SKIP != '1'
         run: |
           NOTES=.github/releases/$TAG.md
           if [ -f "$NOTES" ]; then cp "$NOTES" notes.md; else echo "Action Volume Tamer $VERSION" > notes.md; fi
-          printf '\nSHA-256 of the zip: `%s`\n' "$SHA" >> notes.md
-          gh release create "$TAG" "$ZIP" --target "$GITHUB_SHA" \
+          printf '\n### SHA-256\n' >> notes.md
+          for f in $FILES; do printf -- '- `%s`: `%s`\n' "$(basename $f)" "$(sha256sum $f | cut -d' ' -f1)" >> notes.md; done
+          gh release create "$TAG" $FILES --target "$GITHUB_SHA" \
             --title "Action Volume Tamer $VERSION" --notes-file notes.md --latest

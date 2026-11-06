@@ -1,0 +1,60 @@
+{
+  "manifest_version": 2,
+  "name": "Action Volume Tamer",
+  "version": "2.1.0",
+  "description": "On-device AI keeps movie dialogue audible, turns down loud action scenes, and learns how you like it.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "action-volume-tamer@khadgachy07.github.io",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "<all_urls>"
+  ],
+  "background": {
+    "page": "background.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "brain.js",
+        "content.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "Action Volume Tamer"
+  },
+  "commands": {
+    "too-loud": {
+      "suggested_key": {
+        "default": "Alt+Shift+Down"
+      },
+      "description": "Too loud – turn this kind of scene down and remember it"
+    },
+    "too-quiet": {
+      "suggested_key": {
+        "default": "Alt+Shift+Up"
+      },
+      "description": "Too quiet – turn this kind of scene up and remember it"
+    }
+  },
+  "content_security_policy": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+}

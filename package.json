@@ -1,15 +1,16 @@
 {
   "name": "action-volume-tamer",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
-  "description": "Browser extension that keeps movie dialogue audible and tames loud action scenes with on-device AI.",
+  "description": "Browser extension for Chrome and Firefox that keeps movie dialogue audible and tames loud action scenes with on-device AI.",
   "license": "MIT",
   "scripts": {
     "test:audio": "node test/tts.js && python3 test/make_soundtrack.py",
     "test:sim": "node test/simulate.js",
     "test:chrome": "python3 test/run_chrome.py",
-    "test": "npm run test:audio && npm run test:sim && npm run test:chrome",
-    "zip": "cd extension && zip -r ../action-volume-tamer.zip ."
+    "test:firefox": "python3 test/run_firefox.py",
+    "test": "npm run test:audio && npm run test:sim && npm run test:chrome && npm run test:firefox",
+    "build:firefox": "node tools/build-firefox.js"
   },
   "devDependencies": {
     "mespeak": "^2.0.2",
