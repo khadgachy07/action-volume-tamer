@@ -1,0 +1,29 @@
+# One-time job: point the v2.0.0 and v2.1.0 release tags at the rewritten commits.
+name: Move release tags
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/retag.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  retag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Move tags
+        run: |
+          move() {
+            SHA=$(git log --format=%H -1 --fixed-strings --grep "$2" main)
+            [ -n "$SHA" ] || { echo "No commit for $1"; exit 1; }
+            echo "$1 -> $SHA ($2)"
+            git tag -f "$1" "$SHA"
+            git push -f origin "refs/tags/$1"
+          }
+          move v2.0.0 "Live test: use Playwright's Chromium"
+          move v2.1.0 "Add Firefox version (2.1.0)"
