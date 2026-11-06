@@ -1,7 +1,10 @@
 """Live test: loads the real extension into Chrome, replaces tab capture with the test soundtrack
 (test-harness.js), and checks what the unmodified offscreen.js decides in real time (~70 s).
 
-Needs: pip install playwright, and Google Chrome or Chromium (set CHROME=/path/to/chrome if needed).
+Needs: pip install playwright, plus a browser that accepts --load-extension:
+  python -m playwright install chromium     (recommended), or Chromium / Chrome for Testing.
+Regular branded Google Chrome (137+) ignores --load-extension, so it can't run this test.
+Set CHROME=/path/to/browser to choose one explicitly.
 Exits with code 1 if any check fails.
 """
 import json, os, shutil, statistics, sys, tempfile, time
@@ -10,8 +13,16 @@ from playwright.sync_api import sync_playwright
 HERE = os.path.dirname(os.path.abspath(__file__))
 EXT = os.path.join(os.path.dirname(HERE), 'extension')
 OUT = os.path.join(HERE, 'out')
-CHROME = os.environ.get('CHROME') or next((p for p in ['/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser',
-          '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'] if os.path.exists(p)), None)
+def find_browser():
+    if os.environ.get('CHROME'):
+        return os.environ['CHROME']
+    with sync_playwright() as p:  # Playwright's own Chromium, if installed
+        if os.path.exists(p.chromium.executable_path):
+            return p.chromium.executable_path
+    return next((b for b in ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome',
+                 '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'] if os.path.exists(b)), None)
+
+CHROME = find_browser()
 
 HARNESS_HTML = '''<!doctype html><html><head><meta charset="utf-8"></head><body>
 <script src="lib/ort.wasm.min.js"></script><script src="brain.js"></script>
@@ -38,7 +49,12 @@ try:
             args=['--headless=new', f'--disable-extensions-except={EXT}', f'--load-extension={EXT}',
                   '--disable-features=DisableLoadExtensionCommandLineSwitch',
                   '--autoplay-policy=no-user-gesture-required', '--no-sandbox'])
-        sw = ctx.service_workers[0] if ctx.service_workers else ctx.wait_for_event('serviceworker', timeout=15000)
+        try:
+            sw = ctx.service_workers[0] if ctx.service_workers else ctx.wait_for_event('serviceworker', timeout=15000)
+        except Exception:
+            sys.exit(f'The extension did not load in {CHROME}. Branded Google Chrome ignores --load-extension; '
+                     'run "python -m playwright install chromium" or set CHROME to Chromium / Chrome for Testing.')
+        print('Browser:', CHROME)
         ext_id = sw.url.split('/')[2]
         print('Extension loaded in Chrome:', ext_id)
 

@@ -58,6 +58,7 @@ jobs:
         run: |
           npm install
           pip install numpy playwright
+          python -m playwright install --with-deps chromium
 
       - name: Offline test (real models in Node)
         if: env.SKIP != '1'
@@ -65,7 +66,7 @@ jobs:
 
       - name: Live test (real extension in Chrome)
         if: env.SKIP != '1'
-        run: CHROME=$(command -v google-chrome) npm run test:chrome
+        run: npm run test:chrome
 
       - name: Build zip
         if: env.SKIP != '1'

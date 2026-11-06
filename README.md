@@ -75,13 +75,14 @@ The tests build a 65-second "movie" soundtrack: dialogue, a gunfight with a shou
 ```bash
 npm install
 pip install numpy playwright
+python -m playwright install chromium
 npm test               # or the steps separately:
 npm run test:audio     # make the test soundtrack (test/out/movie.wav)
 npm run test:sim       # offline: real models + brain.js in Node, basic vs AI vs AI-after-learning
 npm run test:chrome    # live: loads the real extension in Chrome and plays the soundtrack (~70 s)
 ```
 
-`test:chrome` needs Google Chrome or Chromium installed. Set `CHROME=/path/to/chrome` if it isn't found.
+`test:chrome` uses Playwright's Chromium. Regular Google Chrome no longer allows tests to load unpacked extensions; you can still use Chromium or Chrome for Testing via `CHROME=/path/to/browser`. The same tests run on GitHub Actions before every release.
 
 Latest results:
 - 25 of 25 checks pass (13 offline, 12 live in Chrome).
