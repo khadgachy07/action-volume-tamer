@@ -1,0 +1,62 @@
+# Publishes a release whenever a version tag (e.g. v2.0.0) is pushed:
+# runs the tests, zips the extension, and attaches the zip to a GitHub release.
+# Release notes come from .github/releases/<tag>.md when that file exists.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install test tools
+        run: |
+          npm install
+          pip install numpy playwright
+
+      - name: Check the tag matches manifest.json
+        run: |
+          VERSION=$(node -p "require('./extension/manifest.json').version")
+          [ "v$VERSION" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME does not match manifest version $VERSION"; exit 1; }
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Offline test (real models in Node)
+        run: npm run test:audio && npm run test:sim
+
+      - name: Live test (real extension in Chrome)
+        run: CHROME=$(command -v google-chrome) npm run test:chrome
+
+      - name: Build zip
+        run: |
+          NAME=action-volume-tamer-$VERSION
+          mkdir -p dist/$NAME
+          cp -r extension/. dist/$NAME/
+          cp LICENSE THIRD_PARTY_NOTICES.md dist/$NAME/
+          (cd dist && zip -qr $NAME.zip $NAME)
+          echo "ZIP=dist/$NAME.zip" >> "$GITHUB_ENV"
+          echo "SHA=$(sha256sum dist/$NAME.zip | cut -d' ' -f1)" >> "$GITHUB_ENV"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES=.github/releases/$GITHUB_REF_NAME.md
+          if [ -f "$NOTES" ]; then cp "$NOTES" notes.md; else echo "Release $GITHUB_REF_NAME" > notes.md; fi
+          printf '\nSHA-256 of the zip: `%s`\n' "$SHA" >> notes.md
+          gh release create "$GITHUB_REF_NAME" "$ZIP" \
+            --title "Action Volume Tamer $VERSION" --notes-file notes.md --latest
