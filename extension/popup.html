@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    :root { --bg:#16181d; --card:#20232b; --line:#2c303a; --text:#e8eaf0; --muted:#9aa0ad; --accent:#4caf50; --warn:#ff7043; --quiet:#42a5f5; --music:#ab47bc; }
+    * { box-sizing: border-box; }
+    body { margin:0; width:320px; padding:14px; background:var(--bg); color:var(--text); font:13px/1.4 system-ui, sans-serif; }
+    h1 { font-size:15px; margin:0 0 10px; display:flex; justify-content:space-between; align-items:center; }
+    #ai { font-size:11px; font-weight:500; padding:2px 8px; border-radius:10px; background:var(--line); color:var(--muted); }
+    #ai.ready { background:#1f3b23; color:#8fd694; }
+    button { width:100%; padding:10px; border:0; border-radius:8px; font-weight:600; cursor:pointer; background:#3a3f4b; color:var(--text); font-size:13px; }
+    button.on { background:var(--accent); color:#0b1a0c; }
+    button.small { width:auto; padding:6px 10px; font-weight:500; font-size:12px; }
+    button:disabled { opacity:.4; cursor:default; }
+    .card { background:var(--card); border-radius:10px; padding:10px 12px; margin:10px 0; }
+    .row { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .title { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:6px; }
+    #scene { font-weight:700; font-size:14px; }
+    #hearing { color:var(--muted); font-size:12px; }
+    .meter { height:8px; background:var(--line); border-radius:4px; margin-top:8px; position:relative; overflow:hidden; }
+    .meter .mid { position:absolute; left:66.6%; top:0; bottom:0; width:1px; background:#555; }
+    #bar { position:absolute; top:0; bottom:0; background:var(--warn); }
+    .teach { display:flex; gap:8px; }
+    .teach button { flex:1; }
+    #learned { margin:0; padding:0; list-style:none; }
+    #learned li { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid var(--line); }
+    #learned li:last-child { border:0; }
+    #toast { font-size:12px; color:#8fd694; min-height:16px; margin-top:6px; }
+    label { display:block; margin:10px 0 2px; color:var(--muted); }
+    input[type=range] { width:100%; }
+    .note { color:var(--muted); font-size:11px; }
+    #error { color:var(--warn); font-size:12px; margin-top:6px; }
+    kbd { background:var(--line); border-radius:3px; padding:0 4px; font-size:11px; }
+    details summary { cursor:pointer; color:var(--muted); }
+  </style>
+</head>
+<body>
+  <h1>🎬 Action Volume Tamer <span id="ai">AI off</span></h1>
+  <button id="toggle">Turn on for this tab</button>
+  <div id="error"></div>
+
+  <div class="card">
+    <div class="row"><span id="scene">Off</span><span id="gain">0.0 dB</span></div>
+    <div id="hearing">&nbsp;</div>
+    <div class="meter"><div class="mid"></div><div id="bar"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="title">Teach it</div>
+    <div class="teach">
+      <button class="small" id="tooLoud">🔉 Too loud</button>
+      <button class="small" id="tooQuiet">🔊 Too quiet</button>
+    </div>
+    <div id="toast"></div>
+    <div class="note">Shortcuts: <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>↓</kbd> / <kbd>↑</kbd>. Changing the player's own volume during a scene also teaches it.</div>
+  </div>
+
+  <div class="card">
+    <div class="row"><span class="title" style="margin:0">What it has learned</span><button class="small" id="forget">Forget</button></div>
+    <ul id="learned"></ul>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>Settings</summary>
+      <label>Max turn-down for action: <b id="maxCutVal"></b> dB</label>
+      <input type="range" id="maxCut" min="0" max="24" step="1">
+      <label>Whisper boost: <b id="boostVal"></b> dB</label>
+      <input type="range" id="boost" min="0" max="10" step="1">
+      <label>React when louder than dialogue by: <b id="thresholdVal"></b> dB</label>
+      <input type="range" id="threshold" min="2" max="15" step="1">
+      <div class="row" style="margin-top:10px">
+        <span class="note">New movie? Re-learn its dialogue level.</span>
+        <button class="small" id="reset">Re-learn</button>
+      </div>
+    </details>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
